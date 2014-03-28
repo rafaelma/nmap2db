@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 #
-# Copyright (c) 2013 Rafael Martinez Guerrero (PostgreSQL-es)
+# Copyright (c) 2014 Rafael Martinez Guerrero (PostgreSQL-es)
 # rafael@postgresql.org.es / http://www.postgresql.org.es/
 #
 # This file is part of Nmap2db
@@ -18,16 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Nmap2db.  If not, see <http://www.gnu.org/licenses/>.
 
-Introduction
-============
+'''
+nmap2db version
+'''
 
-NMAP2DB is a set of scripts and a database that can be used to run
-automatic NMAP scans of a network saving the results in a
-database for further analysis.
-
-The main job is done by the database. A set of triggers and pl/pgsql
-functions make most of the job in keeping the data in sync and
-updated.
-
-Scripts are only used to populate the database and retrieve
-information.
+__version__ = '1.0.0'
