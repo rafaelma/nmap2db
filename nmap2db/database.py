@@ -315,9 +315,6 @@ class nmap2db_db():
             if self.cur:
                 try:
                     
-                    print network_list
-                    print port_list
-
                     if network_list != None:
                         network_sql = 'AND (FALSE '
                         
