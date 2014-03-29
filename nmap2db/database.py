@@ -306,6 +306,66 @@ class nmap2db_db():
     # Method 
     # ############################################
 
+    def show_ports(self,network_list,port_list,from_timestamp,to_timestamp):
+        """A function to get a list of ports"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    
+                    print network_list
+                    print port_list
+
+                    if network_list != None:
+                        network_sql = 'AND (FALSE '
+                        
+                        for network in network_list:
+                            network_sql = network_sql + 'OR "IPaddress" <<= \'' + network + '\' '  
+                                                    
+                        network_sql = network_sql + ') '
+
+                    else:
+                        network_sql = ''
+
+                    if port_list != None:
+                        port_sql = 'AND "Port" IN (' + ','.join(port_list) + ') '
+                    else:
+                        port_sql = ''
+                        
+                    self.cur.execute('SELECT DISTINCT ON ("Port","Prot","IPaddress") ' +
+                                     '"IPaddress",' +
+                                     '"Port",' +
+                                     '"Prot",' +
+                                     '"State",' +
+                                     '"Service",' +
+                                     '"Product",' +
+                                     '"Prod.ver",' +
+                                     '"Prod.info" ' +
+                                     'FROM show_ports ' +
+                                     'WHERE registered >= %s AND registered <= %s ' +
+                                     network_sql +
+                                     port_sql,(from_timestamp,to_timestamp))
+
+                    self.conn.commit()
+
+                    colnames = [desc[0] for desc in self.cur.description]
+                    self.print_results_table(self.cur,colnames,["IPaddress","Port","Prot","State","Service","Product","Prod.ver","Prod.info"])
+
+                except psycopg2.Error as e:
+                    raise e
+                
+            self.pg_close()
+            
+        except psycopg2.Error as e:
+            raise e
+
+
+    # ############################################
+    # Method 
+    # ############################################
+
     def show_host_without_hostname(self):
         """A function to get a list of host without a hostname"""
 

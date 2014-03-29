@@ -350,7 +350,99 @@ class nmap2db_cli(cmd.Cmd):
                 
         else:
             print "\n[ERROR] - This command does not accept parameters.\n          Type help or \? to list commands\n"
+
+
+    # ############################################
+    # Method do_show_host_reports
+    # ############################################
+
+    def do_show_ports(self,args):
+        """
+        DESCRIPTION:
+        This command shows registered ports in a period of time.
+        
+        COMMAND:
+        show_host_reports [IP|HOSTNAME][PORTS][FROM][TO]
+        """
+        
+        #
+        # If a parameter has more than one token, it has to be
+        # defined between doble quotes
+        #
+        
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print "\n[ERROR]: ",e,"\n"
+            return False
+        
+        if len(arg_list) == 0:
             
+            to_default =  datetime.datetime.now()
+            from_default = to_default - datetime.timedelta(days=7)
+
+            print "--------------------------------------------------------"
+            networks = raw_input("# Networks CIDR [all]: ")
+            ports = str(raw_input("# Ports []: "))
+            from_timestamp = raw_input("# From [" + str(from_default) + "]: ")
+            to_timestamp = raw_input("# To [" + str(to_default) + "]: ")
+            print "--------------------------------------------------------"
+
+            if networks == '':
+                network_list = None
+            else:
+                network_list = networks.strip().replace(' ','').split(',')
+
+            if ports == '':
+                port_list = None
+            else:
+                port_list = ports.strip().replace(' ','').split(',')
+
+            if from_timestamp == '':
+                from_timestamp = from_default
+                
+            if to_timestamp == '':
+                to_timestamp = to_default
+
+            try:
+                self.db.show_ports(network_list,port_list,from_timestamp,to_timestamp)
+            except Exception as e:
+                print "\n[ERROR]: ",e
+                
+        elif len(arg_list) == 4:
+            
+            networks = arg_list[0]
+            ports = arg_list[1]
+            from_timestamp = arg_list[2]
+            to_timestamp = arg_list[3]
+
+            print "--------------------------------------------------------"
+            print "# Networks: " + networks
+            print "# Ports: " + ports
+            print "# From: " + from_timestamp
+            print "# To: " + to_timestamp
+            print "--------------------------------------------------------"
+            
+            if networks == '':
+                network_list = None
+            else:
+                network_list = networks.strip().replace(' ','').split(',')
+                
+            if ports == '':
+                port_list = None
+            else:
+                port_list = ports.strip().replace(' ','').split(',')
+
+            try:
+                self.db.show_ports(network_list,port_list,from_timestamp,to_timestamp)
+            except Exception as e:
+                print "\n[ERROR]: ",e
+
+        else:
+            print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
+
+                      
 
     # ############################################
     # Method do_register_backup_server
