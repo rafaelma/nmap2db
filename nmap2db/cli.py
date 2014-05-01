@@ -528,7 +528,7 @@ class nmap2db_cli(cmd.Cmd):
             if osname == '':
                 os_list = None
             else:
-                os_list = osname.strip().replace(' ','').split(',')
+                os_list = osname.split(',')
                 os_list_tmp = []
 
                 for os_tmp in os_list:
