@@ -62,6 +62,7 @@ class nmap2db_cli(cmd.Cmd):
         self.logs = logs("nmap2db_cli")
 
         self.db = nmap2db_db(self.dsn,self.logs,'nmap2db_cli')
+        self.output_format = 'table'
 
 
     # ############################################
@@ -417,12 +418,14 @@ class nmap2db_cli(cmd.Cmd):
             from_timestamp = arg_list[2]
             to_timestamp = arg_list[3]
 
-            print "--------------------------------------------------------"
-            print "# Networks: " + networks
-            print "# Ports: " + ports
-            print "# From: " + from_timestamp
-            print "# To: " + to_timestamp
-            print "--------------------------------------------------------"
+            if self.output_format == 'table':
+            
+                print "--------------------------------------------------------"
+                print "# Networks: " + networks
+                print "# Ports: " + ports
+                print "# From: " + from_timestamp
+                print "# To: " + to_timestamp
+                print "--------------------------------------------------------"
             
             if networks == '':
                 network_list = None
@@ -442,7 +445,105 @@ class nmap2db_cli(cmd.Cmd):
         else:
             print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
 
-                      
+    # ############################################
+    # Method do_show_host_reports
+    # ############################################
+
+    def do_show_os(self,args):
+        """
+        DESCRIPTION:
+        This command shows hostnames running an operativ system.
+        
+        COMMAND:
+        show_os [NETWORK][OS][FROM][TO]
+        """
+        
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print "\n[ERROR]: ",e,"\n"
+            return False
+        
+        if len(arg_list) == 0:
+            
+            to_default =  datetime.datetime.now()
+            from_default = to_default - datetime.timedelta(days=7)
+
+            print "--------------------------------------------------------"
+            networks = raw_input("# Networks CIDR [all]: ")
+            osname = raw_input("# OSname []: ")
+            from_timestamp = raw_input("# From [" + str(from_default) + "]: ")
+            to_timestamp = raw_input("# To [" + str(to_default) + "]: ")
+            print "--------------------------------------------------------"
+
+            if networks == '':
+                network_list = None
+            else:
+                network_list = networks.strip().replace(' ','').split(',')
+
+            if osname == '':
+                os_list = None
+            else:
+                os_list = osname.strip().replace(' ','').split(',')
+                os_list_tmp = []
+
+                for os_tmp in os_list:
+                    os_list_tmp.append('\'%' + os_tmp + '%\'')
+                    
+                os_list = os_list_tmp
+            
+            if from_timestamp == '':
+                from_timestamp = from_default
+                
+            if to_timestamp == '':
+                to_timestamp = to_default
+
+            try:
+                self.db.show_os(network_list,os_list,from_timestamp,to_timestamp)
+            except Exception as e:
+                print "\n[ERROR]: ",e
+                
+        elif len(arg_list) == 4:
+            
+            networks = arg_list[0]
+            osname = arg_list[1]
+            from_timestamp = arg_list[2]
+            to_timestamp = arg_list[3]
+
+            if self.output_format == 'table':
+            
+                print "--------------------------------------------------------"
+                print "# Networks: " + networks
+                print "# OSname: " + osname
+                print "# From: " + from_timestamp
+                print "# To: " + to_timestamp
+                print "--------------------------------------------------------"
+            
+            if networks == '':
+                network_list = None
+            else:
+                network_list = networks.strip().replace(' ','').split(',')
+                
+            if osname == '':
+                os_list = None
+            else:
+                os_list = osname.strip().replace(' ','').split(',')
+                os_list_tmp = []
+
+                for os_tmp in os_list:
+                    os_list_tmp.append('\'%' + os_tmp + '%\'')
+                    
+                os_list = os_list_tmp
+
+            try:
+                self.db.show_os(network_list,os_list,from_timestamp,to_timestamp)
+            except Exception as e:
+                print "\n[ERROR]: ",e
+
+        else:
+            print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
+                 
 
     # ############################################
     # Method do_register_backup_server

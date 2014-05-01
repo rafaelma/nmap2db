@@ -29,7 +29,16 @@ __version__ = "1.0.0"
 if __name__ == '__main__':
 
     if len(sys.argv) > 1:
-        nmap2db_cli().onecmd(' '.join(sys.argv[1:]))
+        if sys.argv[1] =='--use-csv-format':
+            cli = nmap2db_cli()
+            cli.output_format = 'csv'
+            cli.db.output_format = 'csv'
+            cli.onecmd(' '.join(sys.argv[2:]))
+
+        else:
+            cli = nmap2db_cli()
+            cli.onecmd(' '.join(sys.argv[1:]))
+            
     elif len(sys.argv) == 1:
         os.system('clear')
         nmap2db_cli().cmdloop()

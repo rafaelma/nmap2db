@@ -53,6 +53,9 @@ class nmap2db_db():
         self.conn = None
         self.server_version = None
         self.cur = None
+
+        self.output_format = 'table'
+
        
     # ############################################
     # Method pg_connect()
@@ -123,7 +126,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["Network","Remarks"])
+                    self.print_results(self.cur,colnames,["Network","Remarks"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -150,7 +153,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["ScanID","Remarks","Arguments"])
+                    self.print_results(self.cur,colnames,["ScanID","Remarks","Arguments"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -180,7 +183,7 @@ class nmap2db_db():
                         self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["ScanID","Remarks","Arguments"])
+                    self.print_results(self.cur,colnames,["ScanID","Remarks","Arguments"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -212,7 +215,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["ScanID","Finished","Duration","IPaddress","Hostname","State"])
+                    self.print_results(self.cur,colnames,["ScanID","Finished","Duration","IPaddress","Hostname","State"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -292,7 +295,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["Port","State","Reason","Service","Method","Product","Prod.ver","Prod.info"])
+                    self.print_results(self.cur,colnames,["Port","State","Reason","Service","Method","Product","Prod.ver","Prod.info"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -349,7 +352,66 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["IPaddress","Hostname","Port","Prot","State","Service","Product","Prod.ver","Prod.info"])
+                    self.print_results(self.cur,colnames,["IPaddress","Hostname","Port","Prot","State","Service","Product","Prod.ver","Prod.info"])
+
+                except psycopg2.Error as e:
+                    raise e
+                
+            self.pg_close()
+            
+        except psycopg2.Error as e:
+            raise e
+
+
+    # ############################################
+    # Method 
+    # ############################################
+
+    def show_os(self,network_list,os_list,from_timestamp,to_timestamp):
+        """A function to get a list og hostnames running an OS"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    
+                    if network_list != None:
+                        network_sql = 'AND (FALSE '
+                        
+                        for network in network_list:
+                            network_sql = network_sql + 'OR "Network" <<= \'' + network + '\' '  
+                                                    
+                        network_sql = network_sql + ') '
+
+                    else:
+                        network_sql = ''
+
+                    if os_list != None:
+                        os_sql = 'AND (FALSE '
+
+                        for osname in os_list:
+                            os_sql = os_sql + 'OR "OSname" LIKE ' + osname + ' ' 
+
+                        os_sql = os_sql + ') '
+                    else:
+                        os_sql = ''
+                        
+                    self.cur.execute('SELECT DISTINCT ON ("IPaddress") ' +
+                                     '"Registered",' + 
+                                     '"IPaddress",' +
+                                     '"Hostname",' +
+                                     '"OSname" ' + 
+                                     'FROM show_host_details ' +
+                                     'WHERE "Registered" >= \'' + str(from_timestamp) + '\' AND "Registered" <=  \'' + str(to_timestamp) + '\' ' +
+                                     network_sql +
+                                     os_sql +
+                                     'ORDER BY "IPaddress"')
+
+                    self.conn.commit()
+
+                    colnames = [desc[0] for desc in self.cur.description]
+                    self.print_results(self.cur,colnames,["IPaddress","Hostname","OSname"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -376,7 +438,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["IPaddress","State","Last registration"])
+                    self.print_results(self.cur,colnames,["IPaddress","State","Last registration"])
 
                 except psycopg2.Error as e:
                     raise e
@@ -565,22 +627,34 @@ class nmap2db_db():
     # Method 
     # ############################################
             
-    def print_results_table(self,cur,colnames,left_columns):
+    def print_results(self,cur,colnames,left_columns):
         '''A function to print a table with sql results'''
 
-        x = PrettyTable(colnames)
-        x.padding_width = 1
-        
-        for column in left_columns:
-            x.align[column] = "l"
-        
-        for records in cur:
-            columns = []
+        if self.output_format == 'table':
 
-            for index in range(len(colnames)):
-                columns.append(records[index])
-
-            x.add_row(columns)
+            x = PrettyTable(colnames)
+            x.padding_width = 1
             
-        print x.get_string()
-        print
+            for column in left_columns:
+                x.align[column] = "l"
+        
+            for records in cur:
+                columns = []
+
+                for index in range(len(colnames)):
+                    columns.append(records[index])
+
+                x.add_row(columns)
+            
+            print x.get_string()
+            print
+
+        elif self.output_format == 'csv':
+            
+            for records in cur:
+                columns = []
+
+                for index in range(len(colnames)):
+                    columns.append(str(records[index]))
+
+                print ','.join(columns)
