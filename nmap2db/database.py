@@ -333,6 +333,7 @@ class nmap2db_db():
                         
                     self.cur.execute('SELECT DISTINCT ON ("Port","Prot","IPaddress") ' +
                                      '"IPaddress",' +
+                                     '"Hostname",' +
                                      '"Port",' +
                                      '"Prot",' +
                                      '"State",' +
@@ -348,7 +349,7 @@ class nmap2db_db():
                     self.conn.commit()
 
                     colnames = [desc[0] for desc in self.cur.description]
-                    self.print_results_table(self.cur,colnames,["IPaddress","Port","Prot","State","Service","Product","Prod.ver","Prod.info"])
+                    self.print_results_table(self.cur,colnames,["IPaddress","Hostname","Port","Prot","State","Service","Product","Prod.ver","Prod.info"])
 
                 except psycopg2.Error as e:
                     raise e
