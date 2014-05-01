@@ -1660,7 +1660,7 @@ SELECT a.report_id AS "ReportID",
        a.registered AS "Registered",
        b.elapsed_time AS "Duration",
        a.hostaddr AS "IPaddress",
-       a.hostname AS "Hostname",
+       array_to_string(a.hostname,' ') AS "Hostname",
        a.state AS "State"
 FROM host_info a
 JOIN scan_report b ON a.report_id = b.report_id
