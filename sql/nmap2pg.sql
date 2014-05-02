@@ -1726,22 +1726,21 @@ ORDER BY hostaddr;
 
 ALTER VIEW show_host_without_hostname OWNER TO nmap2db_role_rw;
 
-
 CREATE OR REPLACE VIEW show_ports AS
-SELECT a.registered,
-       a.hostaddr::cidr AS "IPaddress",
-       array_to_string(b.hostname,' ') AS "Hostname", 
-       a.port_id AS "Port",
-       a.port_protocol AS "Prot",
-       a.port_state AS "State",
-       a.service AS "Service",
-       a.service_product AS "Product",
-       a.service_product_version AS "Prod.ver",
-       left(a.service_product_extrainfo,50) AS "Prod.info"
-FROM service_info a
-JOIN host_info b ON a.hostaddr = b.hostaddr
-ORDER BY a.port_id,a.port_protocol,a.hostaddr;
+SELECT registered,
+       hostaddr::cidr AS "IPaddress",
+       port_id AS "Port",
+       port_protocol AS "Prot",
+       port_state AS "State",
+       service AS "Service",
+       service_product AS "Product",
+       service_product_version AS "Prod.ver",
+       left(service_product_extrainfo,50) AS "Prod.info"
+FROM service_info
+ORDER BY port_id,port_protocol,hostaddr;
 
 ALTER VIEW show_ports OWNER TO nmap2db_role_rw;
+
+
 
 COMMIT;
