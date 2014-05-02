@@ -391,7 +391,7 @@ class nmap2db_db():
                         os_sql = 'AND (FALSE '
 
                         for osname in os_list:
-                            os_sql = os_sql + 'OR "OSname" LIKE ' + osname + ' ' 
+                            os_sql = os_sql + 'OR "OSname" LIKE \'' + osname + '\' ' 
 
                         os_sql = os_sql + ') '
                     else:

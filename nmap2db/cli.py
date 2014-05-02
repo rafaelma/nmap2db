@@ -363,7 +363,7 @@ class nmap2db_cli(cmd.Cmd):
         This command shows registered ports in a period of time.
         
         COMMAND:
-        show_host_reports [IP|HOSTNAME][PORTS][FROM][TO]
+        show_host_reports [NETWORKS][PORTS][FROM][TO]
         """
         
         #
@@ -485,11 +485,11 @@ class nmap2db_cli(cmd.Cmd):
             if osname == '':
                 os_list = None
             else:
-                os_list = osname.strip().replace(' ','').split(',')
+                os_list = osname.split(',')
                 os_list_tmp = []
 
                 for os_tmp in os_list:
-                    os_list_tmp.append('\'%' + os_tmp + '%\'')
+                    os_list_tmp.append('%' + os_tmp + '%')
                     
                 os_list = os_list_tmp
             
@@ -532,7 +532,7 @@ class nmap2db_cli(cmd.Cmd):
                 os_list_tmp = []
 
                 for os_tmp in os_list:
-                    os_list_tmp.append('\'%' + os_tmp + '%\'')
+                    os_list_tmp.append('%' + os_tmp + '%')
                     
                 os_list = os_list_tmp
 
