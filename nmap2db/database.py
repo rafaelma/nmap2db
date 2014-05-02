@@ -344,7 +344,8 @@ class nmap2db_db():
                     else:
                         service_sql = ''    
                         
-                    self.cur.execute('WITH port_list AS('
+
+                    self.cur.execute('WITH port_list AS(' + 
                                      'SELECT DISTINCT ON ("Port","Prot","IPaddress") ' +
                                      '"IPaddress",' +
                                      '"Port",' +
@@ -370,7 +371,8 @@ class nmap2db_db():
                                      'a."Prod.ver",' +
                                      'a."Prod.info" ' +
                                      'FROM port_list a ' +
-                                     'JOIN host_info b ON a."IPaddress" = b.hostaddr'
+                                     'JOIN host_info b ON a."IPaddress" = b.hostaddr ' +
+                                     'WHERE b.registered >= \'' + str(from_timestamp) + '\' AND b.registered <= \'' + str(to_timestamp) + '\' '
                                      )
 
                     self.conn.commit()
