@@ -359,7 +359,8 @@ class nmap2db_db():
                                      network_sql +
                                      port_sql + 
                                      service_sql + ')' +
-                                     'SELECT a."IPaddress",' +
+                                     'SELECT DISTINCT ON ("Port","Prot","IPaddress") ' + 
+                                     'a."IPaddress",' +
                                      'array_to_string(b.hostname,\' \') AS "Hostname",' + 
                                      'a."Port",' +
                                      'a."Prot",' +
