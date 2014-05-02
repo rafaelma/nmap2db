@@ -357,20 +357,15 @@ class nmap2db_cli(cmd.Cmd):
     # Method do_show_host_reports
     # ############################################
 
-    def do_show_ports(self,args):
+    def do_show_port(self,args):
         """
         DESCRIPTION:
-        This command shows registered ports in a period of time.
+        This command shows registered ports/services in a period of time.
         
         COMMAND:
-        show_host_reports [NETWORKS][PORTS][FROM][TO]
+        show_port [network, ...] [port, ...] [service, ...] [from] [to]
         """
-        
-        #
-        # If a parameter has more than one token, it has to be
-        # defined between doble quotes
-        #
-        
+                
         try: 
             arg_list = shlex.split(args)
         
@@ -386,6 +381,7 @@ class nmap2db_cli(cmd.Cmd):
             print "--------------------------------------------------------"
             networks = raw_input("# Networks CIDR [all]: ")
             ports = str(raw_input("# Ports []: "))
+            services = raw_input("# Services []: ")
             from_timestamp = raw_input("# From [" + str(from_default) + "]: ")
             to_timestamp = raw_input("# To [" + str(to_default) + "]: ")
             print "--------------------------------------------------------"
@@ -400,6 +396,17 @@ class nmap2db_cli(cmd.Cmd):
             else:
                 port_list = ports.strip().replace(' ','').split(',')
 
+            if services == '':
+                service_list = None
+            else:
+                service_list = services.split(',')
+                service_list_tmp = []
+
+                for service_tmp in service_list:
+                    service_list_tmp.append('%' + service_tmp + '%')
+                    
+                service_list = service_list_tmp
+
             if from_timestamp == '':
                 from_timestamp = from_default
                 
@@ -407,24 +414,26 @@ class nmap2db_cli(cmd.Cmd):
                 to_timestamp = to_default
 
             try:
-                self.db.show_ports(network_list,port_list,from_timestamp,to_timestamp)
+                self.db.show_ports(network_list,port_list,service_list,from_timestamp,to_timestamp)
             except Exception as e:
                 print "\n[ERROR]: ",e
                 
-        elif len(arg_list) == 4:
+        elif len(arg_list) == 5:
             
             networks = arg_list[0]
             ports = arg_list[1]
-            from_timestamp = arg_list[2]
-            to_timestamp = arg_list[3]
+            services = arg_list[2]
+            from_timestamp = arg_list[3]
+            to_timestamp = arg_list[4]
 
             if self.output_format == 'table':
             
                 print "--------------------------------------------------------"
                 print "# Networks: " + networks
-                print "# Ports: " + ports
-                print "# From: " + from_timestamp
-                print "# To: " + to_timestamp
+                print "# Ports: " + str(ports)
+                print "# Services: " + services
+                print "# From: " + str(from_timestamp)
+                print "# To: " + str(to_timestamp)
                 print "--------------------------------------------------------"
             
             if networks == '':
@@ -437,8 +446,19 @@ class nmap2db_cli(cmd.Cmd):
             else:
                 port_list = ports.strip().replace(' ','').split(',')
 
+            if services == '':
+                service_list = None
+            else:
+                service_list = services.split(',')
+                service_list_tmp = []
+
+                for service_tmp in service_list:
+                    service_list_tmp.append('%' + service_tmp + '%')
+                    
+                service_list = service_list_tmp
+
             try:
-                self.db.show_ports(network_list,port_list,from_timestamp,to_timestamp)
+                self.db.show_ports(network_list,port_list,service_list,from_timestamp,to_timestamp)
             except Exception as e:
                 print "\n[ERROR]: ",e
 

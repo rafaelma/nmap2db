@@ -309,7 +309,7 @@ class nmap2db_db():
     # Method 
     # ############################################
 
-    def show_ports(self,network_list,port_list,from_timestamp,to_timestamp):
+    def show_ports(self,network_list,port_list,service_list,from_timestamp,to_timestamp):
         """A function to get a list of ports"""
 
         try:
@@ -333,6 +333,16 @@ class nmap2db_db():
                         port_sql = 'AND "Port" IN (' + ','.join(port_list) + ') '
                     else:
                         port_sql = ''
+
+                    if service_list != None:
+                        service_sql = 'AND (FALSE '
+                        
+                        for service in service_list:
+                            service_sql = service_sql + 'OR "Service" LIKE \'' + service + '\' ' 
+
+                        service_sql = service_sql + ') '
+                    else:
+                        service_sql = ''    
                         
                     self.cur.execute('SELECT DISTINCT ON ("Port","Prot","IPaddress") ' +
                                      '"IPaddress",' +
@@ -345,9 +355,10 @@ class nmap2db_db():
                                      '"Prod.ver",' +
                                      '"Prod.info" ' +
                                      'FROM show_ports ' +
-                                     'WHERE registered >= %s AND registered <= %s ' +
+                                     'WHERE registered >= \'' + str(from_timestamp) + '\' AND registered <= \'' + str(to_timestamp) + '\' ' +
                                      network_sql +
-                                     port_sql,(from_timestamp,to_timestamp))
+                                     port_sql + 
+                                     service_sql)
 
                     self.conn.commit()
 
