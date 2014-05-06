@@ -742,7 +742,56 @@ class nmap2db_cli(cmd.Cmd):
             print "\n[ERROR] - Wrong number of parameters used.\n          Type help or \? to list commands\n"
 
 
+    # ############################################
+    # Method do_generate_topology
+    # ############################################
 
+    def do_generate_topology(self,args):
+        """
+        DESCRIPTION:
+        This command generates a PNG file with the network topology of 
+        the nmap2db networks.
+        
+        COMMAND:
+        generate_topology [Output file]
+        """
+                
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print "\n[ERROR]: ",e,"\n"
+            return False
+        
+        if len(arg_list) == 0:
+            
+            print "--------------------------------------------------------"
+            output_file = raw_input("# Output file []: ")
+            print "--------------------------------------------------------"
+
+            try:
+                self.db.generate_topology(output_file)
+
+            except Exception as e:
+                print "\n[ERROR]: ",e
+                
+        elif len(arg_list) == 1:
+            
+            output_file = arg_list[0]
+          
+            print "--------------------------------------------------------"
+            print "# Output file: " + output_file
+            print "--------------------------------------------------------"
+            
+            try:
+                self.db.generate_topology(output_file)
+                
+            except Exception as e:
+                print "\n[ERROR]: ",e
+
+        else:
+            print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
+            
 
     # ############################################
     # Method do_clear
