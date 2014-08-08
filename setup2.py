@@ -42,7 +42,36 @@ try:
         raise SystemExit('ERROR: nmap2db needs at least python 2.6 to work')
     else:
         install_requires = ['psycopg2','argparse']
-                
+
+        
+    #
+    # Creating nmap2db users and groups
+    #
+        
+
+    groupadd_command = '/usr/sbin/groupadd -f -r nmap2db'
+    proc = subprocess.Popen([groupadd_command],shell=True)
+    proc.wait()
+
+    if proc.returncode == 0:
+        print 'Group nmap2db created'
+        
+    elif proc.returncode != 0:
+        raise SystemExit('ERROR: Problems creating group nmap2db. Returncode: ' + str(proc.returncode))
+    
+    useradd_command = '/usr/sbin/useradd -m -N -g nmap2db -r -d /var/lib/nmap2db -s /bin/bash -c "NMAP scan manager" nmap2db'
+    proc = subprocess.Popen([useradd_command],shell=True)
+    proc.wait()
+
+    if proc.returncode == 0:
+        print 'User nmap2db created'
+        
+    elif proc.returncode == 9:
+        print 'User nmap2db already exists'
+
+    else:
+        raise SystemExit('ERROR: Problems creating user nmap2db. Returncode: ' + str(proc.returncode))
+    
     #
     # Setup
     #
@@ -73,6 +102,22 @@ try:
             'Programming Language :: Python :: 2.7',
             ],
           )
+
+    try:
+        root_uid = pwd.getpwnam('root').pw_uid
+        nmap2db_uid = pwd.getpwnam('nmap2db').pw_uid
+        nmap2db_gid = grp.getgrnam('nmap2db').gr_gid
+        
+        os.chown('/var/log/nmap2db',nmap2db_uid, nmap2db_gid)
+        os.chmod('/var/log/nmap2db',01775)
+
+        os.chown('/var/log/nmap2db/nmap2db.log',nmap2db_uid, nmap2db_gid)
+        os.chmod('/var/log/nmap2db/nmap2db.log',00664)
+
+        print "Privileges defined for user nmap2db"
+
+    except Exception as e:
+        print e
 
 except Exception as e:
     print e

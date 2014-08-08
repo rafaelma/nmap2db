@@ -1,0 +1,24 @@
+Source: nmap2db
+Section: database
+Priority: optional
+Maintainer: Rafael Martinez Guerrero <rafael@postgresql.org.es>
+Build-Depends: debhelper (>= 8.0.0), 
+	       python, 
+	       python-dev, 
+	       python-setuptools
+Standards-Version: 3.9.5
+Vcs-Browser: https://github.com/rafaelma/nmap2db
+Vcs-Git: git://github.com/rafaelma/nmap2db.git
+X-Python-Version: >= 2.6
+
+Package: nmap2db
+Architecture: all
+Depends: ${shlibs:Depends}, 
+	 ${misc:Depends}, 
+	 ${python:Depends},
+	 python-psycopg2, 
+	 python-argparse, 
+	 nmap,
+	 adduser
+Description: MAP2DB is a tool for managing nmap scans and save the results in a
+PostgreSQL database.

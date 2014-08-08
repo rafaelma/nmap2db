@@ -1,0 +1,5 @@
+nmap2db (1.0.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Rafael Martinez Guerrero <rafael@postgresql.org.es>  Sat, 09 Aug 2014 13:48:05 +0000
