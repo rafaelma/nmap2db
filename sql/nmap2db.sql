@@ -16,9 +16,9 @@
 -- needed by NMAP2DB. It needs PostgreSQL >= 9.1
 -- --------------------------------------------------
 
-DROP DATABASE nmap2db;
-DROP USER nmap2db_role_rw;
-DROP USER nmap2db_role_ro;
+-- DROP DATABASE nmap2db;
+-- DROP USER nmap2db_role_rw;
+-- DROP USER nmap2db_role_ro;
 
 \echo '\n# [Creating user nmap2db_role_rw]\n'
 

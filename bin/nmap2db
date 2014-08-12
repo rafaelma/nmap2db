@@ -28,20 +28,27 @@ __version__ = "1.0.0"
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 1:
-        if sys.argv[1] =='--use-csv-format':
-            cli = nmap2db_cli()
-            cli.output_format = 'csv'
-            cli.db.output_format = 'csv'
-            cli.onecmd(' '.join(sys.argv[2:]))
+    try:
 
-        else:
-            cli = nmap2db_cli()
-            cli.onecmd(' '.join(sys.argv[1:]))
+        if len(sys.argv) > 1:
+            if sys.argv[1] =='--use-csv-format':
+                cli = nmap2db_cli()
+                cli.output_format = 'csv'
+                cli.db.output_format = 'csv'
+                cli.onecmd(' '.join(sys.argv[2:]))
+
+            else:
+                cli = nmap2db_cli()
+                cli.onecmd(' '.join(sys.argv[1:]))
             
-    elif len(sys.argv) == 1:
-        os.system('clear')
-        nmap2db_cli().cmdloop()
-    else:
-        raise NotImplementedError
+        elif len(sys.argv) == 1:
+            os.system('clear')
+            nmap2db_cli().cmdloop()
+        else:
+            raise NotImplementedError
 
+    except KeyboardInterrupt:
+        print
+        print "\nDone, thank you for using PgBackMan"
+        
+        sys.exit(0)

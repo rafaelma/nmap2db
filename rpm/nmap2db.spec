@@ -48,7 +48,6 @@ rm -rf %{buildroot}
 %{python_sitelib}/%{name}/
 %{_bindir}/%{name}*
 %{_sysconfdir}/init.d/%{name}*
-%{_sysconfdir}/logrotate.d/%{name}*
 %{_datadir}/%{name}/*
 /var/log/%{name}/*
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf

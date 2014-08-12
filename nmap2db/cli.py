@@ -24,13 +24,16 @@ import cmd
 import sys
 import os
 import time
-import datetime
 import signal
 import shlex
+import datetime
+import subprocess
 
 from nmap2db.database import * 
 from nmap2db.config import *
 from nmap2db.logs import *
+from nmap2db.prettytable import *
+import nmap2db.version
 
 # ############################################
 # class nmap2db_cli
@@ -48,8 +51,10 @@ class nmap2db_cli(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         
+        self.version = self.get_version()
+
         self.intro =  '\n########################################################\n' + \
-            'Welcome to the Nmap2DB shell (v.1.0.0)\n' + \
+            'Welcome to the Nmap2DB shell (v.' + self.version + ')\n' + \
             '########################################################\n' + \
             'Type help or \? to list commands.\n'
         
@@ -746,59 +751,66 @@ class nmap2db_cli(cmd.Cmd):
     # Method do_generate_topology
     # ############################################
 
-    def do_generate_topology(self,args):
-        """
-        DESCRIPTION:
-        This command generates a PNG file with the network topology of 
-        the nmap2db networks.
-        
-        COMMAND:
-        generate_topology [Output file]
-        """
-                
-        try: 
-            arg_list = shlex.split(args)
-        
-        except ValueError as e:
-            print "\n[ERROR]: ",e,"\n"
-            return False
-        
-        if len(arg_list) == 0:
-            
-            print "--------------------------------------------------------"
-            output_file = raw_input("# Output file []: ")
-            print "--------------------------------------------------------"
-
-            try:
-                self.db.generate_topology(output_file)
-
-            except Exception as e:
-                print "\n[ERROR]: ",e
-                
-        elif len(arg_list) == 1:
-            
-            output_file = arg_list[0]
-          
-            print "--------------------------------------------------------"
-            print "# Output file: " + output_file
-            print "--------------------------------------------------------"
-            
-            try:
-                self.db.generate_topology(output_file)
-                
-            except Exception as e:
-                print "\n[ERROR]: ",e
-
-        else:
-            print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
-            
+    #   def do_generate_topology(self,args):
+    #       """
+    #       DESCRIPTION:
+    #       This command generates a PNG file with the network topology of 
+    #       the nmap2db networks.
+    #       
+    #       COMMAND:
+    #       generate_topology [Output file]
+    #       """
+    #               
+    #       try: 
+    #           arg_list = shlex.split(args)
+    #       
+    #       except ValueError as e:
+    #           print "\n[ERROR]: ",e,"\n"
+    #           return False
+    #       
+    #       if len(arg_list) == 0:
+    #           
+    #           print "--------------------------------------------------------"
+    #           output_file = raw_input("# Output file []: ")
+    #           print "--------------------------------------------------------"
+    #
+    #           try:
+    #               self.db.generate_topology(output_file)
+    #
+    #           except Exception as e:
+    #               print "\n[ERROR]: ",e
+    #               
+    #       elif len(arg_list) == 1:
+    #           
+    #           output_file = arg_list[0]
+    #         
+    #           print "--------------------------------------------------------"
+    #           print "# Output file: " + output_file
+    #           print "--------------------------------------------------------"
+    #           
+    #           try:
+    #               self.db.generate_topology(output_file)
+    #               
+    #           except Exception as e:
+    #               print "\n[ERROR]: ",e
+    #
+    #       else:
+    #           print "\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n"
+    #           
 
     # ############################################
     # Method do_clear
     # ############################################
 
     def do_clear(self,args):
-        """Command clear"""
+        '''
+        DESCRIPTION: 
+        Clears the screen and shows the welcome banner.
+        
+        COMMAND: 
+        clear
+        
+        '''
         
         os.system('clear')
         print self.intro
@@ -828,26 +840,28 @@ class nmap2db_cli(cmd.Cmd):
 
         if line_in != '':
             split_line = line_in.split()
-
-            if split_line[0] not in ['EOF','shell','SHELL','!']:
+            
+            if split_line[0] not in ['EOF','shell','SHELL','\!']:
                 line_out = line_in.lower()
             else:
                 line_out = line_in
+                
+            if split_line[0] == '\h':
+                line_out = line_out.replace('\h','help')
+            elif split_line[0] == '\?':
+                line_out = line_out.replace('\?','help')
+            elif split_line[0] == '\!':
+                line_out = line_out.replace('\!','shell')
+            elif line_out == '\s':
+                line_out = 'show_history'    
+            elif line_out == '\q':
+                line_out = 'quit' 
+                
+            self._hist += [ line_out.strip() ]
+          
         else:
             line_out = ''
-
-        if line_out.strip() != '':
-            self._hist += [ line_out.strip() ]
-
-        if line_out == "\h":
-            line_out = "help"
-        elif line_out == "\?":
-            line_out = "help"
-        elif line_out == "\s":
-            line_out = "show_history"    
-        elif line_out == "\q":
-            line_out = "quit" 
-              
+       
         return cmd.Cmd.precmd(self, line_out)
 
 
@@ -856,12 +870,27 @@ class nmap2db_cli(cmd.Cmd):
     # ############################################
 
     def do_shell(self, line):
-        "Run a shell command"
+        '''
+        DESCRIPTION:
+        This command runs a command in the operative system
+               
+        COMMAND:
+        shell [command]
+
+        [command]:
+        ----------
+        Any command that can be run in the operative system.
+        
+        '''
         
         try:
-            os.system(line)
-        except:
-            print "* Problems running '%s'" % line
+            proc = subprocess.Popen([line],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
+            output, errors = proc.communicate()
+            print output,errors
+            print
+
+        except Exception as e:
+            print '\n[ERROR]: Problems running %s' % line
 
 
     # ############################################
@@ -869,8 +898,15 @@ class nmap2db_cli(cmd.Cmd):
     # ############################################
 
     def do_quit(self, args):
-        'Quit the Nmap2db shell.'
+        '''
+        DESCRIPTION: 
+        Quits/terminate the nmap2db shell.
+
+        COMMAND: 
+        quit
         
+        '''
+                
         print "\nDone, thank you for using Nmap2db"
         return True
 
@@ -880,10 +916,17 @@ class nmap2db_cli(cmd.Cmd):
     # ############################################
     
     def do_EOF(self, line):
-        'Quit the Nmap2db shell.'
+        '''
+        DESCRIPTION: 
+        Quits/terminate the Nmap2db shell.
+
+        COMMAND: 
+        EOF
         
+        '''
+
         print
-        print "Thank you for using Nmap2db"
+        print '\nDone, thank you for using Nmap2db'
         return True
 
 
@@ -892,10 +935,24 @@ class nmap2db_cli(cmd.Cmd):
     # ############################################
 
     def do_show_history(self, args):
-        """Print a list of commands that have been entered"""
+        '''
+        DESCRIPTION: 
+        This command shows the list of commands that have been entered
+        during the Nmap2db shell session.
+
+        COMMAND: 
+        show_history
+
+        '''
+
+        cnt = 0
+        print
 
         for line in self._hist:
-            print line
+            print '[' + str(cnt) + ']: ' + line
+            cnt = cnt +1
+
+        print
 
 
     # ############################################
@@ -918,26 +975,26 @@ class nmap2db_cli(cmd.Cmd):
     # ############################################
 
     def help_shortcuts(self):
-        """Help information about shortcuts in Nmap2db"""
+        '''Help information about shortcuts in Nmap2db'''
         
-        print """
-        Shortcuts in Nmap2db:
+        print '''
+        Shortcuts in PgBackMan:
 
-        \h Help information
-        \? Help information
+        \h [COMMAND] - Help on syntax of Nmap2db commands
+        \? [COMMAND] - Help on syntax of Nmap2db commands
         
         \s - display history 
         \q - quit Nmap2db shell
 
         \! [COMMAND] - Execute command in shell
           
-        """
+        '''
 
     # ############################################
     # Method handler
     # ############################################
 
-    def signal_handler(self,signum, frame):
+    def signal_handler_sigint(self,signum, frame):
         cmd.Cmd.onecmd(self,'quit')
         sys.exit(0)
 
@@ -955,11 +1012,24 @@ class nmap2db_cli(cmd.Cmd):
             return False
 
 
+    # ############################################
+    # Method get_version
+    # ############################################
 
-signal.signal(signal.SIGINT, nmap2db_cli().signal_handler)
+    def get_version(self):
+        '''Get nmap2db version'''
+        
+        try:
+            return nmap2db.version.__version__
+
+        except Exception as e:
+            return 'Unknown'
+
 
 
 if __name__ == '__main__':
 
+    signal.signal(signal.SIGINT, nmap2db_cli().signal_handler_sigint)
+    signal.signal(signal.SIGTERM, nmap2db_cli().signal_handler_sigint)
     nmap2db_cli().cmdloop()
 
