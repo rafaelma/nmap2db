@@ -61,5 +61,5 @@ useradd -M -N -g nmap2db -r -d /var/lib/nmap2db -s /bin/bash \
         -c "NMAP scan manager" nmap2db >/dev/null 2>&1 || :
 
 %changelog
-* Mon Jun 24 2014 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.0.0-1
+* Mon Aug 12 2014 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.0.0-1
 - New release 1.0.0

@@ -37,6 +37,11 @@ The main features of NMAP2DB are:
 * Management of multiple networks
 * Management of multiple scan types
 * Scans scheduling
+* Host reports
+* Scan reports
+* OS reports
+* Ports reports
+* Host without DNS entry.
 * Written in Python and PL/PgSQL 
 * Distributed under the GNU General Public License 3
 
@@ -44,7 +49,7 @@ The main features of NMAP2DB are:
 Architecture and components
 ===========================
 
-The components forming part of Nmap2db could be listed as follows:
+The components forming part of NMAP2DB could be listed as follows:
 
 * **Scan servers:** One or several servers running NMAP2DB. They will
   use nmap to execute the scans defined in the system and will access
@@ -129,18 +134,10 @@ Install the RPM package with::
 
   [root@server]# rpm -Uvh nmap2db-<version>.rpm
 
+Or::
 
-Installing via Deb packages
-----------------------------
-
-Deb packages for Debian7 are available at
-https://github.com/rafaelma/nmap2db/releases
-
-Install the Deb package with::
-
-  [root@server]# dpkg -i nmap2db_<version>.deb
-
-
+  [root@server]# yum install nmap2db-<version>.rpm
+  
 
 Installing the nmap2db database
 ---------------------------------
@@ -162,9 +159,9 @@ There is another file in this directory named
 ``nmap2pg_table_partition.sql``. This file can be used to install and
 configure partitioning of the main tables used by NMAP2DB. We
 recommend to use table partitioning when using NMAP2DB. The nmap2db
-database can become very large if you have a large network and you
-want to keep some historic data and partitioning will help to have a
-good performance when searching for data in the database.
+database can became very large if you have a large network and you
+want to keep some historic data. Partitioning will help to have a good
+performance when searching for data in the database.
 
 Run this command to install partitioning support.
 
@@ -177,7 +174,7 @@ Configuration
 =============
 
 Scan servers
---------------
+------------
 
 A scan server needs to have access to the ``nmap2db`` database. This
 can be done like this:
@@ -238,7 +235,7 @@ To start e.g. 40 nmap2db scan processes:
 
 ::
 
-   /etc/init.d/nmap2db_ctrl.sh -n 20 -c start
+   /etc/init.d/nmap2db_ctrl.sh -n 40 -c start
 
 To stop all nmap2db scan processed::
 
@@ -256,118 +253,43 @@ The NMAP2DB interactive shell can be started by running the program
 ::
 
    [nmap2db@scan_server]# nmap2db
-   Needs output
+   ########################################################
+   Welcome to the Nmap2DB shell (v.1.0.0)
+   ########################################################
+   Type help or \? to list commands.
+   
+   [nmap2db]$ help
+   
+   Documented commands (type help <topic>):
+   ========================================
+   EOF                shell                       show_os              
+   clear              show_history                show_port            
+   quit               show_host_reports           show_report_details  
+   register_network   show_host_without_hostname  show_scan_definitions
+   register_scan_job  show_network_definitions    show_scan_jobs       
+   
+   Miscellaneous help topics:
+   ==========================
+   shortcuts
+   
+   Undocumented commands:
+   ======================
+   help
+   
 
-**NOTE:** It is possible to use the NMAP2DB shell in a
-non-interactive modus by running ``/usr/bin/nmap2db`` with a command
-as a parameter in the OS shell. This can be used to run NMAP2DB
-commands from shell scripts.e.g.::
+**NOTE:** It is possible to use the NMAP2DB shell in a non-interactive
+modus by running ``/usr/bin/nmap2db`` with a command as a parameter in
+the OS shell. This can be used to run NMAP2DB commands from shell
+scripts.e.g.::
 
-  Needs example
+  -bash-4.1$ nmap2db show_network_definitions
+  +------------------+---------+
+  | Network          | Remarks |
+  +------------------+---------+
+  | 46.105.18.177/32 |         |
+  +------------------+---------+
 
-
-clear
------
-
-This command clears the screen and shows the welcome banner
-
-::
-
-   clear
-
-This command can be run only without parameters. e.g.:
-
-::
-
-   [nmap2db]$ clear
-   Need output
-
-
-
-quit
-----
-
-This command quits/terminates the Nmap2db shell.
-
-::
-
-  quit
-
-A shortcut to this command is ``\q``.
-
-This command can be run only without parameters. e.g.:
-
-::
-
-   [nmap2db]$ quit
-   Done, thank you for using Nmap2db
-
-   [nmap2db]$ \q
-   Done, thank you for using Nmap2db
-
-
-shell
------
-
-This command runs a command in the operative system.
-
-::
-
-   shell [command]
-
-Parameters:
-
-* **[command]:** Any command that can be run in the operative system.
-
-It exists a shortcut ``[!]`` for this command that can be used insteed
-of ``shell``. This command can be run only with parameters. e.g.:
-
-::
-
-   [nmap2db]$ ! ls -l
-   total 88
-   -rw-rw-r--. 1 vagrant vagrant   135 May 30 10:04 AUTHORS
-   drwxrwxr-x. 2 vagrant vagrant  4096 May 30 10:03 bin
-   drwxrwxr-x. 4 vagrant vagrant  4096 May 30 10:03 docs
-   drwxrwxr-x. 2 vagrant vagrant  4096 May 30 10:03 etc
-   -rw-rw-r--. 1 vagrant vagrant     0 May 30 10:04 INSTALL
-   -rw-rw-r--. 1 vagrant vagrant 35121 May 30 10:04 LICENSE
-   drwxrwxr-x. 2 vagrant vagrant  4096 May 30 10:03 pgbackman
-   -rw-rw-r--. 1 vagrant vagrant   797 May 30 10:04 README.md
-   -rwxrwxr-x. 1 vagrant vagrant  4087 May 30 10:04 setup.py
-   drwxrwxr-x. 2 vagrant vagrant  4096 May 30 10:03 sql
-   drwxrwxr-x. 4 vagrant vagrant  4096 May 30 10:03 vagrant
-
-
-show_history
-------------
-
-Show the list of commands that have been entered during the Nmap2db
-shell session.
-
-::
-
-   show_history
-
-A shortcut to this command is ``\s``. One can also use the *Emacs
-Line-Edit Mode Command History Searching* to get previous commands
-containing a string. Hit ``[CTRL]+[r]`` in the Nmap2db shell followed by
-the search string you are trying to find in the history.
-
-This command can be run only without parameters. e.g.:
-
-::
-
-   [nmap2db]$ show_history
-
-   [0]: help
-   [1]: help support
-   [2]: help show_history
-   [3]: shell df -h | grep /srv/pgbackman
-   [4]: show_history
-   [5]: help
-   [6]: show_history
-
+Use help <command_name> to get some information about a command.
 
 
 Submitting a bug
